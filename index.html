@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Code With GAX - Multi Tool Hub</title>
+
+<!-- Font Awesome (local) -->
+<link rel="stylesheet" href="css/all.min.css">
+
+<style>
+/* ===== Reset & Base ===== */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overscroll-behavior: none;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#scroll-container {
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-bottom: 20px;
+}
+
+/* Disable tap highlights */
+* { -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #121212;
+  color: #fff;
+  line-height: 1.6;
+  transition: background 0.4s, color 0.4s;
+}
+
+/* ===== Header ===== */
+header {
+  background: linear-gradient(270deg, #1abc9c, #16a085, #2ecc71, #27ae60);
+  background-size: 400% 400%;
+  animation: gradientShift 10s ease infinite;
+  padding: 10px 15px;
+  text-align: center;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 6px;
+  overflow: hidden;
+}
+
+/* Animated gradient */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.header-text {
+  line-height: 1.2;
+  text-align: center;
+}
+
+.title-line {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.subtitle-line {
+  font-size: 0.8rem;
+  opacity: 0.85;
+  margin-top: 2px;
+  font-weight: 500;
+  letter-spacing: 0.6px;
+}
+
+/* Animate each letter */
+.letter, .subtitle-letter {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(-10px);
+  animation: fadeInUp 0.6s forwards;
+}
+
+.space { display: inline-block; width: 0.45em; }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Theme toggle button */
+#theme-toggle {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: #fff;
+  padding: 6px 9px;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#theme-toggle i {
+  transition: transform 0.4s ease, color 0.3s ease;
+}
+
+#theme-toggle:hover { background: rgba(255,255,255,0.25); }
+#theme-toggle:active i { transform: rotate(180deg); }
+
+/* ===== Sections ===== */
+.section-title {
+  margin: 30px 15px 15px 15px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #1abc9c;
+  border-left: 6px solid #1abc9c;
+  padding-left: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 20px;
+  padding: 0 15px 30px 15px;
+}
+
+/* ===== Tool Buttons ===== */
+.tool-btn {
+  background: #1e1e1e;
+  color: #fff;
+  text-decoration: none;
+  padding: 25px 15px;
+  border-radius: 15px;
+  font-weight: 600;
+  font-size: 1rem;
+  text-align: center;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.5);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.tool-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.6);
+  background: linear-gradient(135deg, #1abc9c, #16a085);
+}
+
+/* Ripple effect */
+.tool-btn::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 0;
+  top: 50%;
+  left: 50%;
+  background: rgba(255,255,255,0.1);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  transition: width 0.4s ease, height 0.4s ease;
+}
+.tool-btn:active::after {
+  width: 200%;
+  height: 500%;
+  transition: 0s;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 0.9rem;
+  background: #1e1e1e;
+  color: #ccc;
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.4);
+}
+
+/* ===== Light Mode ===== */
+body.light-mode {
+  background: #f0f0f0;
+  color: #121212;
+}
+
+body.light-mode header {
+  background: linear-gradient(270deg, #3498db, #2980b9, #2ecc71, #1abc9c);
+  background-size: 400% 400%;
+  animation: gradientShift 10s ease infinite;
+  color: #fff;
+}
+
+body.light-mode .tool-btn {
+  background: #e0e0e0;
+  color: #121212;
+  box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+}
+
+body.light-mode .tool-btn:hover {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: #fff;
+}
+
+body.light-mode footer {
+  background: #e0e0e0;
+  color: #121212;
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.2);
+}
+
+/* Responsive */
+@media (max-width: 400px){
+  .title-line { font-size: 1rem; }
+  .subtitle-line { font-size: 0.7rem; }
+  .tool-btn { padding: 20px 10px; font-size: 0.9rem; }
+}
+</style>
+</head>
+
+<body oncontextmenu="return false;" onselectstart="return false;" ondragstart="return false;">
+<div id="scroll-container">
+
+<header>
+  <div class="header-text">
+    <div class="title-line">
+      <span class="letter">C</span>
+      <span class="letter">o</span>
+      <span class="letter">d</span>
+      <span class="letter">e</span>
+      <span class="space"></span>
+      <span class="letter">W</span>
+      <span class="letter">i</span>
+      <span class="letter">t</span>
+      <span class="letter">h</span>
+      <span class="space"></span>
+      <span class="letter">G</span>
+      <span class="letter">A</span>
+      <span class="letter">X</span>
+    </div>
+    <div class="subtitle-line">
+      <span class="subtitle-letter">M</span>
+      <span class="subtitle-letter">u</span>
+      <span class="subtitle-letter">l</span>
+      <span class="subtitle-letter">t</span>
+      <span class="subtitle-letter">i</span>
+      <span class="space"></span>
+      <span class="subtitle-letter">T</span>
+      <span class="subtitle-letter">o</span>
+      <span class="subtitle-letter">o</span>
+      <span class="subtitle-letter">l</span>
+      <span class="space"></span>
+      <span class="subtitle-letter">H</span>
+      <span class="subtitle-letter">u</span>
+      <span class="subtitle-letter">b</span>
+    </div>
+  </div>
+  <button id="theme-toggle"><i class="fas fa-moon"></i></button>
+</header>
+
+<!-- WEB TOOLS -->
+<div class="section-title">WEB STAFF</div>
+<div class="tools-grid">
+  <a href="html-editor.html" class="tool-btn"><i class="fab fa-html5"></i> HTML Editor</a>
+  <a href="python-editor.html" class="tool-btn"><i class="fab fa-python"></i> Python Editor</a>
+  <a href="web-data.html" class="tool-btn"><i class="fas fa-database"></i> Web Data Viewer</a>
+</div>
+
+<!-- MINECRAFT TOOLS -->
+<div class="section-title">MC STAFF</div>
+<div class="tools-grid">
+  <a href="mc-motd.html" class="tool-btn"><i class="fas fa-comment-dots"></i> MOTD Generator</a>
+  <a href="mc-server.html" class="tool-btn"><i class="fas fa-server"></i> Server Stats Viewer</a>
+  <a href="mc-seed.html" class="tool-btn"><i class="fas fa-map-marked-alt"></i> Seed Map Generator</a>
+</div>
+
+<!-- IMAGE TOOLS -->
+<div class="section-title">IMAGE TOOLS</div>
+<div class="tools-grid">
+  <a href="img-converter.html" class="tool-btn"><i class="fas fa-image"></i> Image Converter</a>
+</div>
+
+<footer>
+  &copy; 2025 Code With GAX | All Tools Free to Use<br>
+  Made By GamerArnabXYZ
+</footer>
+</div>
+
+<script>
+// Prevent pinch zoom
+document.addEventListener('touchmove', e => { if (e.scale && e.scale !== 1) e.preventDefault(); }, { passive: false });
+document.addEventListener('gesturestart', e => e.preventDefault());
+
+// Theme toggle
+const toggleBtn = document.getElementById('theme-toggle');
+toggleBtn.addEventListener('click', () => {
+  document.body.classList.toggle('light-mode');
+  const icon = toggleBtn.querySelector('i');
+  icon.className = document.body.classList.contains('light-mode')
+    ? 'fas fa-sun'
+    : 'fas fa-moon';
+});
+</script>
+</body>
+</html>

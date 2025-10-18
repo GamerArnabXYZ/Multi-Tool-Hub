@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>HTML Editor v3 - Code With GAX</title>
+<link rel="stylesheet" href="css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-drag:none;-webkit-tap-highlight-color:transparent}
+body{font-family:'Segoe UI',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;transition:background 0.5s,color 0.5s}
+:root{
+--bg-dark:#101010;--text-dark:#f2f2f2;--panel-dark:#1c1c1c;--accent-dark:#00bfff;
+--bg-light:#f2f2f2;--text-light:#111;--panel-light:#ffffff;--accent-light:#007acc;
+}
+body.dark{background:var(--bg-dark);color:var(--text-dark)}
+body.light{background:var(--bg-light);color:var(--text-light)}
+header{padding:10px;display:flex;justify-content:space-between;align-items:center;background:var(--panel-dark);border-bottom:2px solid var(--accent-dark);transition:background 0.5s}
+body.light header{background:var(--panel-light);border-bottom:2px solid var(--accent-light)}
+header h1{font-size:14px;flex:1;text-align:center}
+.btn{background:var(--accent-dark);border:none;color:white;padding:6px 10px;border-radius:6px;font-weight:bold;cursor:pointer;transition:0.3s;display:flex;align-items:center;justify-content:center;font-size:14px}
+body.light .btn{background:var(--accent-light)}
+.btn:hover{opacity:0.8}
+.editor-area{flex:1;display:flex;flex-direction:column}
+textarea#codeInput{flex:1;width:100%;border:none;outline:none;resize:none;padding:12px;font-family:monospace;font-size:14px;overflow:auto;background:#121212;color:#00ff9c}
+body.light textarea#codeInput{background:#f0f0f0;color:#007acc}
+iframe#preview{flex:1;border:none;margin-top:5px;background:#fff}
+footer{text-align:center;padding:8px;font-size:12px;background:var(--panel-dark);border-top:1px solid var(--accent-dark);transition:background 0.5s}
+body.light footer{background:var(--panel-light);border-top:1px solid var(--accent-light)}
+#menuItems{display:none;position:absolute;top:40px;right:0;background:#1c1c1c;border:1px solid #00bfff;border-radius:6px;flex-direction:column;z-index:1000;padding:5px;opacity:0;transform:translateY(-10px);transition:opacity 0.3s,transform 0.3s}
+body.light #menuItems{background:#fff;border:1px solid #007acc}
+#menuItems.show{display:flex;opacity:1;transform:translateY(0)}
+#menuItems button{margin:5px 0;width:140px}
+.menu-container{position:relative}
+#runBtn{margin:8px}
+.controls{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;padding:5px}
+@media(max-width:500px){header h1{font-size:13px}textarea#codeInput{font-size:13px}}
+</style>
+</head>
+<body oncontextmenu="return false;">
+<header>
+<h1>HTML + CSS + JS Editor v3</h1>
+<div class="menu-container">
+<button class="btn" id="menuToggle" title="Menu"><i class="fas fa-bars"></i></button>
+<div id="menuItems">
+<button class="btn" id="themeToggle"><i class="fas fa-adjust"></i> Theme</button>
+<button class="btn" id="modeToggle"><i class="fas fa-bolt"></i> Auto/Manual</button>
+<button class="btn" id="layoutToggle"><i class="fas fa-layer-group"></i> Layout</button>
+</div>
+</div>
+</header>
+
+<div class="editor-area">
+<textarea id="codeInput" placeholder="Write full HTML, CSS & JS code here..."></textarea>
+<div class="controls">
+<button class="btn" id="beautifyBtn" title="Beautify Code"><i class="fas fa-magic"></i></button>
+<button class="btn" id="copyBtn" title="Copy Code"><i class="fas fa-copy"></i></button>
+<label for="openFile" class="btn" title="Open File"><i class="fas fa-folder-open"></i></label>
+<input type="file" id="openFile" accept=".html,.txt" style="display:none">
+<button class="btn" id="saveFile" title="Save File"><i class="fas fa-save"></i></button>
+<button class="btn" id="downloadBtn" title="Download .html"><i class="fas fa-download"></i></button>
+<button class="btn" id="runBtn" style="display:none;"><i class="fas fa-play"></i></button>
+</div>
+<iframe id="preview"></iframe>
+</div>
+
+<footer>&copy; 2025 Code With GAX — Made by GamerArnabXYZ</footer>
+
+<script>
+const codeInput=document.getElementById('codeInput'),
+preview=document.getElementById('preview'),
+themeToggle=document.getElementById('themeToggle'),
+modeToggle=document.getElementById('modeToggle'),
+layoutToggle=document.getElementById('layoutToggle'),
+menuToggle=document.getElementById('menuToggle'),
+menuItems=document.getElementById('menuItems'),
+runBtn=document.getElementById('runBtn'),
+beautifyBtn=document.getElementById('beautifyBtn'),
+copyBtn=document.getElementById('copyBtn'),
+openFile=document.getElementById('openFile'),
+saveFile=document.getElementById('saveFile'),
+downloadBtn=document.getElementById('downloadBtn');
+
+let autoRun=true,layoutMode=parseInt(localStorage.getItem('layoutMode')||1);
+
+if(window.matchMedia('(prefers-color-scheme: dark)').matches){document.body.classList.add('dark');}
+else{document.body.classList.add('light');}
+
+window.onload=()=>{
+  codeInput.value=localStorage.getItem('code_all')||
+  "<!DOCTYPE html>\n<html>\n<head>\n<title>Hello</title>\n<style>\nbody{text-align:center;font-family:sans-serif;}\n</style>\n</head>\n<body>\n<h1>Hello World</h1>\n<script>console.log('Hello from GAX!');<\/script>\n</body>\n</html>";
+  updatePreview();
+};
+
+function saveCode(){localStorage.setItem('code_all',codeInput.value);}
+function updatePreview(){preview.srcdoc=codeInput.value;saveCode();}
+
+codeInput.addEventListener('input',()=>{autoRun?updatePreview():saveCode();});
+runBtn.addEventListener('click',updatePreview);
+
+modeToggle.addEventListener('click',()=>{autoRun=!autoRun;runBtn.style.display=autoRun?"none":"block";});
+themeToggle.addEventListener('click',()=>{
+  if(document.body.classList.contains('light')){
+    document.body.classList.replace('light','dark');
+  }else{
+    document.body.classList.replace('dark','light');
+  }
+});
+layoutToggle.addEventListener('click',()=>{
+  layoutMode=(layoutMode%2)+1;
+  localStorage.setItem('layoutMode',layoutMode);
+  document.querySelector('.editor-area').classList.toggle('reverse',layoutMode===2);
+});
+menuToggle.addEventListener('click',()=>menuItems.classList.toggle('show'));
+
+beautifyBtn.addEventListener('click',()=>{
+  try{
+    const formatted=html_beautify(codeInput.value,{indent_size:2,space_in_empty_paren:true});
+    codeInput.value=formatted;updatePreview();
+  }catch{alert("Beautify unavailable in this mode");}
+});
+
+copyBtn.addEventListener('click',()=>{
+  navigator.clipboard.writeText(codeInput.value);
+  copyBtn.innerHTML='<i class="fas fa-check"></i>';
+  setTimeout(()=>copyBtn.innerHTML='<i class="fas fa-copy"></i>',1000);
+});
+
+openFile.addEventListener('change',e=>{
+  const file=e.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{codeInput.value=ev.target.result;updatePreview();};
+  reader.readAsText(file);
+});
+
+saveFile.addEventListener('click',()=>{
+  const blob=new Blob([codeInput.value],{type:"text/plain"});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='code.txt';
+  a.click();
+});
+
+downloadBtn.addEventListener('click',()=>{
+  const blob=new Blob([codeInput.value],{type:"text/html"});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='code.html';
+  a.click();
+});
+
+function html_beautify(str,opts){
+  const lines=str.split(/>\s*</);
+  return lines.join('>\n<');
+}
+</script>
+</body>
+</html>

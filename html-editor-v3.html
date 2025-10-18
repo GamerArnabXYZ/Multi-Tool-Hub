@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>HTML Editor - Code With GAX</title>
+<link rel="stylesheet" href="css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;user-select:none;-webkit-user-drag:none;-webkit-tap-highlight-color:transparent}
+body{font-family:'Segoe UI',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;transition:background 0.5s,color 0.5s}
+:root{--bg-dark:#101010;--text-dark:#f2f2f2;--panel-dark:#1c1c1c;--accent-dark:#00bfff;--bg-light:#f2f2f2;--text-light:#111;--panel-light:#ffffff;--accent-light:#007acc}
+body.dark{background:var(--bg-dark);color:var(--text-dark)}
+body.dark header{background:var(--panel-dark);border-bottom:2px solid var(--accent-dark)}
+body.dark footer{background:var(--panel-dark);border-top:1px solid var(--accent-dark)}
+body.light{background:var(--bg-light);color:var(--text-light)}
+body.light header{background:var(--panel-light);border-bottom:2px solid var(--accent-light)}
+body.light footer{background:var(--panel-light);border-top:1px solid var(--accent-light)}
+header{padding:10px;display:flex;justify-content:space-between;align-items:center;transition:background 0.5s,color 0.5s}
+header h1{font-size:14px;flex:1;text-align:center}
+.btn{background:var(--accent-dark);border:none;color:white;padding:6px 10px;border-radius:6px;font-weight:bold;cursor:pointer;transition:0.3s;display:flex;align-items:center;justify-content:center;font-size:14px}
+body.light .btn{background:var(--accent-light)}
+.btn:hover{opacity:0.8}
+.btn i{pointer-events:none}
+.editor-tabs{display:flex;gap:5px;justify-content:center;margin-bottom:5px}
+.editor-tabs button{flex:1}
+#editorContainer{display:flex;flex:1;flex-direction:column;transition:all 0.5s ease;position:relative;overflow:auto}
+textarea{width:100%;min-height:200px;background:#121212;color:#00ff9c;border:none;outline:none;font-family:monospace;font-size:14px;padding:12px;box-sizing:border-box;overflow:auto;position:absolute;top:0;left:0;opacity:0;transition:all 0.4s ease;transform:translateX(100%)}
+textarea.active{opacity:1;transform:translateX(0);position:relative}
+body.light textarea{background:#f0f0f0;color:#007acc}
+iframe#preview{flex:1;border:none;background:#fff;margin-top:5px;transition:all 0.4s ease}
+#editorContainer.top-preview{flex-direction:column-reverse}
+footer{text-align:center;padding:8px;font-size:12px;transition:background 0.5s,color 0.5s}
+.menu-container{position:relative}
+#menuItems{display:none;position:absolute;top:35px;right:0;background:#1c1c1c;border:1px solid #00bfff;border-radius:6px;flex-direction:column;z-index:1000;padding:5px;opacity:0;transform:translateY(-10px);transition:opacity 0.3s, transform 0.3s}
+body.light #menuItems{background:#ffffff;border:1px solid #007acc}
+#menuItems.show{display:flex;opacity:1;transform:translateY(0)}
+#menuItems button{margin:5px 0;width:120px}
+@media(max-width:500px){header h1{font-size:13px}textarea{font-size:13px}}
+</style>
+</head>
+<body oncontextmenu="return false;" onselectstart="return false;" ondragstart="return false;">
+<header>
+<h1>HTML + CSS + JS Editor</h1>
+<div class="menu-container">
+<button class="btn" id="menuToggle" title="Menu"><i class="fas fa-bars"></i></button>
+<div class="menu-items" id="menuItems">
+<button class="btn" id="themeToggle" title="Toggle Theme"><i class="fas fa-adjust"></i></button>
+<button class="btn" id="modeToggle" title="Auto/Manual Run"><i class="fas fa-bolt"></i></button>
+<button class="btn" id="layoutToggle" title="Change Layout"><i class="fas fa-layer-group"></i></button>
+<button class="btn" id="focusModeToggle" title="Focus Mode"><i class="fas fa-eye-slash"></i></button>
+</div>
+</div>
+</header>
+<div class="editor-tabs">
+<button class="btn" data-editor="html" title="HTML Editor"><i class="fab fa-html5"></i></button>
+<button class="btn" data-editor="css" title="CSS Editor"><i class="fab fa-css3-alt"></i></button>
+<button class="btn" data-editor="js" title="JS Editor"><i class="fab fa-js-square"></i></button>
+</div>
+<div id="editorContainer">
+<textarea id="html" placeholder="Write HTML here..."></textarea>
+<textarea id="css" placeholder="Write CSS here..."></textarea>
+<textarea id="js" placeholder="Write JavaScript here..."></textarea>
+<button class="btn" id="runBtn" style="display:none;margin:10px;" title="Run Code"><i class="fas fa-play"></i></button>
+<iframe id="preview"></iframe>
+</div>
+<footer>&copy; 2025 Code With GAX — Made by GamerArnabXYZ</footer>
+
+<script>
+const htmlEl=document.getElementById('html'),
+      cssEl=document.getElementById('css'),
+      jsEl=document.getElementById('js'),
+      preview=document.getElementById('preview'),
+      modeToggle=document.getElementById('modeToggle'),
+      themeToggle=document.getElementById('themeToggle'),
+      layoutToggle=document.getElementById('layoutToggle'),
+      runBtn=document.getElementById('runBtn'),
+      container=document.getElementById('editorContainer'),
+      menuToggle=document.getElementById('menuToggle'),
+      menuItems=document.getElementById('menuItems'),
+      focusModeToggle=document.getElementById('focusModeToggle');
+
+let autoRun=true,layoutMode=parseInt(localStorage.getItem('layoutMode')||1),currentEditor=htmlEl;
+let focusMode=false,previewHidden=false,originalHeight=window.innerHeight;
+
+if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){document.body.classList.add('dark');}
+else{document.body.classList.add('light');}
+
+function switchEditor(editorId){
+  if(currentEditor.id===editorId)return;
+  const newEl=document.getElementById(editorId);
+  currentEditor.style.opacity=0;
+  setTimeout(()=>{
+    currentEditor.classList.remove('active');
+    currentEditor=newEl;
+    currentEditor.classList.add('active');
+    setTimeout(()=>{currentEditor.style.opacity=1},50);
+  },300);
+}
+
+switchEditor('html');
+document.querySelectorAll('.editor-tabs button').forEach(btn=>btn.addEventListener('click',()=>switchEditor(btn.dataset.editor)));
+
+window.onload=()=>{
+  htmlEl.value=localStorage.getItem('code_html')||"<h1>Hello World</h1>";
+  cssEl.value=localStorage.getItem('code_css')||"body { text-align:center; }";
+  jsEl.value=localStorage.getItem('code_js')||"console.log('Code With GAX');";
+  applyLayout();
+  updatePreview();
+};
+
+function saveCode(){
+  localStorage.setItem('code_html',htmlEl.value);
+  localStorage.setItem('code_css',cssEl.value);
+  localStorage.setItem('code_js',jsEl.value);
+}
+
+function updatePreview(){
+  const html=htmlEl.value,css=`<style>${cssEl.value}</style>`,js=`<script>${jsEl.value}<\/script>`;
+  preview.srcdoc=html+css+js;
+  saveCode();
+}
+
+// input events
+[htmlEl,cssEl,jsEl].forEach(el=>{
+  el.addEventListener('input',()=>{
+    if(autoRun) updatePreview();
+    saveCode();
+  });
+});
+
+// run button
+runBtn.addEventListener('click',updatePreview);
+
+// mode toggle
+modeToggle.addEventListener('click',()=>{autoRun=!autoRun;runBtn.style.display=autoRun?"none":"block"});
+
+// theme toggle
+themeToggle.addEventListener('click',()=>{
+  if(document.body.classList.contains('light')){
+    document.body.classList.remove('light');
+    document.body.classList.add('dark');
+  } else {
+    document.body.classList.remove('dark');
+    document.body.classList.add('light');
+  }
+});
+
+// layout toggle
+layoutToggle.addEventListener('click',()=>{
+  layoutMode=(layoutMode%2)+1;
+  localStorage.setItem('layoutMode',layoutMode);
+  applyLayout();
+});
+
+function applyLayout(){
+  container.classList.remove('top-preview');
+  if(layoutMode===2) container.classList.add('top-preview');
+  layoutToggle.innerHTML='<i class="fas fa-layer-group"></i> '+layoutMode;
+  updatePreview();
+}
+
+// hamburger menu
+menuToggle.addEventListener('click',()=>menuItems.classList.toggle('show'));
+
+// focus mode toggle
+focusModeToggle.addEventListener('click',()=>{
+  focusMode=!focusMode;
+  focusModeToggle.innerHTML = focusMode ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+  if(!focusMode) preview.style.display='block';
+});
+
+// detect mobile keyboard and typing
+function checkFocusMode(){
+  if(!focusMode) return;
+  const currentHeight = window.innerHeight;
+  if((currentHeight < originalHeight - 100 || htmlEl===document.activeElement || cssEl===document.activeElement || jsEl===document.activeElement) && !previewHidden){
+    preview.style.display='none';
+    previewHidden=true;
+  } else if(currentHeight >= originalHeight - 50 && previewHidden){
+    preview.style.display='block';
+    previewHidden=false;
+  }
+}
+setInterval(checkFocusMode,300);
+</script>
+</body>
+</html>
