@@ -3,195 +3,188 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SidoCode Editor - Auto Typing</title>
+<title>CodeWithGAX Editor</title>
 <style>
-* {margin:0; padding:0; box-sizing:border-box; user-select:none;}
+@font-face {
+  font-family: "Minecraft";
+  src: url("fonts/Minecraft.ttf");
+}
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(180deg, #89f7fe 0%, #66a6ff 100%);
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
+  margin: 0;
+  background: #1e1e1e;
+  color: white;
+  font-family: "Minecraft", monospace;
   overflow: hidden;
 }
 
-/* --- Header --- */
-header {
-  background: #121212;
-  color: #fff;
-  text-align: center;
-  padding: 8px 0;
-  font-weight: bold;
-  letter-spacing: 0.5px;
-  font-size: 15px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+/* ======= TOP TOOLBAR ======= */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #111;
+  border-bottom: 2px solid #00d0ff;
+  padding: 6px 10px;
+  height: 44px;
+}
+.left-controls, .right-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.topbar button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.topbar button:hover {
+  color: #00e1ff;
+  transform: scale(1.1);
+}
+.topbar img {
+  width: 22px;
+  height: 22px;
+  filter: brightness(1.1);
 }
 
-/* --- Tabs --- */
+/* Editor Name */
+.editor-name {
+  font-size: 16px;
+  letter-spacing: 1px;
+  color: #00e1ff;
+  text-shadow: 0 0 6px #00e1ff;
+}
+
+/* ======= CODE AREA ======= */
+.editor-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 44px);
+}
+
 .tabs {
   display: flex;
-  justify-content: center;
-  background: #1f1f1f;
+  background: #0f0f0f;
+  border-bottom: 1px solid #00c0ff;
 }
 .tabs button {
   flex: 1;
+  padding: 10px 0;
+  background: transparent;
   border: none;
-  background: #1f1f1f;
-  color: #aaa;
-  padding: 10px;
-  font-weight: bold;
+  color: #ccc;
+  font-family: "Minecraft", monospace;
   cursor: pointer;
-  transition: 0.3s;
+  transition: 0.2s;
 }
 .tabs button.active {
-  color: #fff;
-  background: #2a2a2a;
-  border-bottom: 2px solid #00bfff;
-}
-
-/* --- Editor --- */
-#editor {
-  flex: 1;
-  background: #0d0d0d;
-  color: #00ff9c;
-  padding: 10px;
-  font-family: monospace;
-  font-size: 14px;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  outline: none;
-  border: none;
-}
-
-/* --- Controls --- */
-.controls {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  color: white;
   background: #1a1a1a;
-  padding: 10px;
-  color: #ccc;
-}
-.controls label {
-  font-size: 13px;
-}
-.controls input[type="range"] {
-  width: 120px;
-}
-button#runBtn {
-  background: #00bfff;
-  border: none;
-  color: #fff;
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.3s;
-}
-button#runBtn:hover {
-  background: #00a0d6;
+  border-bottom: 3px solid #00e1ff;
 }
 
-/* --- Output --- */
-iframe {
-  width: 100%;
-  height: 50%;
-  border: none;
-  background: white;
+.code-area {
+  flex: 1;
+  background: #121212;
+  padding: 10px;
+  overflow-y: auto;
+  font-family: "Courier New", monospace;
+  font-size: 15px;
+  color: #00ffae;
+  border-left: 3px solid #00e1ff;
+  white-space: pre;
 }
-footer {
-  background: #111;
-  color: #999;
-  text-align: center;
-  font-size: 12px;
-  padding: 6px;
+
+/* ======= MOBILE FRIENDLY ======= */
+@media (max-width: 600px) {
+  .editor-name { font-size: 13px; }
+  .topbar img { width: 18px; height: 18px; }
+  .tabs button { font-size: 12px; }
 }
 </style>
 </head>
-<body oncontextmenu="return false">
+<body>
 
-<header>Animated Gradient Card (Tailwind)</header>
-
-<div class="tabs">
-  <button id="htmlTab" class="active">HTML</button>
-  <button id="cssTab">CSS</button>
-  <button id="jsTab">JavaScript</button>
-</div>
-
-<pre id="editor"></pre>
-
-<div class="controls">
-  <div>
-    <label>Typing Speed:</label>
-    <input type="range" id="speed" min="5" max="150" value="40">
+<!-- ======= TOP TOOLBAR ======= -->
+<div class="topbar">
+  <div class="left-controls">
+    <!-- Fullscreen -->
+    <button title="Fullscreen" onclick="toggleFullscreen()">🖥️</button>
+    <!-- Mobile/Desktop View -->
+    <button title="Mobile/Desktop View" onclick="toggleView()">📱</button>
   </div>
-  <button id="runBtn">Run ▶</button>
+
+  <div class="editor-name">CodeWithGAX Editor</div>
+
+  <div class="right-controls">
+    <!-- Pause/Start -->
+    <button title="Pause / Start" onclick="toggleRun()">⏸️</button>
+    <!-- Reset -->
+    <button title="Reset" onclick="resetEditor()">🔄</button>
+    <!-- Refresh -->
+    <button title="Refresh Preview" onclick="refreshPreview()">↻</button>
+    <!-- Settings -->
+    <button title="Settings" onclick="openSettings()">⚙️</button>
+  </div>
 </div>
 
-<iframe id="preview"></iframe>
-
-<footer>SIDOCODE EDITOR — Code With GAX</footer>
+<!-- ======= CODE AREA ======= -->
+<div class="editor-container">
+  <div class="tabs">
+    <button class="active" onclick="openTab('html')">HTML</button>
+    <button onclick="openTab('css')">CSS</button>
+    <button onclick="openTab('js')">JavaScript</button>
+  </div>
+  <div class="code-area" id="codeArea" contenteditable="true">
+&lt;div class="loader-container"&gt;
+  &lt;div class="loader"&gt;&lt;/div&gt;
+&lt;/div&gt;
+  </div>
+</div>
 
 <script>
-const editor = document.getElementById("editor");
-const preview = document.getElementById("preview");
-const runBtn = document.getElementById("runBtn");
-const speedInput = document.getElementById("speed");
-const htmlTab = document.getElementById("htmlTab");
-const cssTab = document.getElementById("cssTab");
-const jsTab = document.getElementById("jsTab");
+let currentTab = "html";
 
-let activeLang = "html";
-let typing = false;
+function openTab(tab) {
+  document.querySelectorAll(".tabs button").forEach(btn => btn.classList.remove("active"));
+  event.target.classList.add("active");
+  currentTab = tab;
+  document.getElementById("codeArea").innerText =
+    tab === "html" ? "<!-- HTML Code -->"
+    : tab === "css" ? "/* CSS Code */"
+    : "// JavaScript Code";
+}
 
-// Get saved codes from localStorage
-const codes = {
-  html: localStorage.getItem("code_html") || "<h1>Hello World</h1>",
-  css: localStorage.getItem("code_css") || "body {text-align:center;}",
-  js: localStorage.getItem("code_js") || "console.log('Hi from Code With GAX!');"
-};
-
-// Typewriter effect
-async function typeCode(text, speed) {
-  typing = true;
-  editor.textContent = "";
-  for (let i = 0; i < text.length; i++) {
-    editor.textContent += text[i];
-    await new Promise(r => setTimeout(r, speed));
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+  } else {
+    document.exitFullscreen();
   }
-  typing = false;
 }
 
-// Auto type selected code
-async function autoTypeCurrent() {
-  const speed = parseInt(speedInput.value);
-  await typeCode(codes[activeLang], speed);
-  setTimeout(runCode, 500);
+function toggleView() {
+  alert("🔄 Switching between Mobile/Desktop View (demo only)");
 }
 
-// Run code
-function runCode() {
-  const html = codes.html;
-  const css = `<style>${codes.css}</style>`;
-  const js = `<script>${codes.js}<\/script>`;
-  preview.srcdoc = html + css + js;
+function toggleRun() {
+  alert("⏯️ Run / Pause simulation (demo)");
 }
 
-// Tab switching
-function setActive(tab) {
-  document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("active"));
-  tab.classList.add("active");
+function resetEditor() {
+  document.getElementById("codeArea").innerText = "";
 }
-htmlTab.onclick = () => { if(!typing){activeLang="html"; setActive(htmlTab); editor.textContent=codes.html;} };
-cssTab.onclick = () => { if(!typing){activeLang="css"; setActive(cssTab); editor.textContent=codes.css;} };
-jsTab.onclick = () => { if(!typing){activeLang="js"; setActive(jsTab); editor.textContent=codes.js;} };
 
-runBtn.onclick = runCode;
+function refreshPreview() {
+  alert("🔁 Preview refreshed (demo)");
+}
 
-// Start auto typing on load
-window.onload = () => {
-  autoTypeCurrent();
-};
+function openSettings() {
+  alert("⚙️ Settings panel coming soon!");
+}
 </script>
 
 </body>
